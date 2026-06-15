@@ -1,0 +1,96 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "CorporateGatewayInfrastructureSchema",
+  "description": "Validates enterprise zero-trust gateway access configuration profiles and security topologies.",
+  "type": "object",
+  "required": ["gateway_id", "environment", "network_security", "auth_topology"],
+  "additionalProperties": false,
+  "properties": {
+    "gateway_id": {
+      "type": "string",
+      "pattern": "^GW-[A-Z]{3}-[0-9]{4}$"
+    },
+    "environment": {
+      "type": "string",
+      "enum": ["development", "staging", "production"]
+    },
+    "network_security": {
+      "type": "object",
+      "required": ["ip_whitelist", "hsts_enabled"],
+      "additionalProperties": false,
+      "properties": {
+        "ip_whitelist": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)/(3[0-2]|[12]?[0-9])$"
+          },
+          "description": "Enforces valid IPv4 CIDR notation (e.g., 192.168.1.0/24)."
+        },
+        "hsts_enabled": { "type": "boolean" },
+        "compliance_signoff": {
+          "type": "array",
+          "items": { "type": "string", "pattern": "^ISO-27001-[A-Z0-9]{5}$" },
+          "minItems": 1
+        }
+      }
+    },
+    "auth_topology": {
+      "type": "object",
+      "oneOf": [
+        {
+          "dependentComment": "Topology 1: JWT Authentication Edge Strategy",
+          "required": ["jwt_config"],
+          "properties": {
+            "jwt_config": {
+              "type": "object",
+              "required": ["issuer", "algorithm"],
+              "additionalProperties": false,
+              "properties": {
+                "issuer": { "type": "string", "format": "uri" },
+                "algorithm": { "type": "string", "enum": ["RS256", "ES256"] }
+              }
+            }
+          },
+          "not": { "required": ["mtls_config"] }
+        },
+        {
+          "dependentComment": "Topology 2: mTLS Authentication Edge Strategy",
+          "required": ["mtls_config"],
+          "properties": {
+            "mtls_config": {
+              "type": "object",
+              "required": ["ca_certificate_thumbprint", "enforce_revocation_check"],
+              "additionalProperties": false,
+              "properties": {
+                "ca_certificate_thumbprint": { "type": "string", "pattern": "^[a-fA-F0-9]{40}$" },
+                "enforce_revocation_check": { "type": "boolean" }
+              }
+            }
+          },
+          "not": { "required": ["jwt_config"] }
+        }
+      ]
+    }
+  },
+  "allOf": [
+    {
+      "dependentComment": "Rule A: If environment is production, HSTS must be true and compliance signoff must be provided.",
+      "if": {
+        "properties": {
+          "environment": { "const": "production" }
+        }
+      },
+      "then": {
+        "properties": {
+          "network_security": {
+            "required": ["compliance_signoff"],
+            "properties": {
+              "hsts_enabled": { "const": true }
+            }
+          }
+        }
+      }
+    }
+  ]
+}
