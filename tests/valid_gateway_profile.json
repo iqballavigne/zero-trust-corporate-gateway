@@ -1,0 +1,15 @@
+{
+  "gateway_id": "GW-USA-2026",
+  "environment": "production",
+  "network_security": {
+    "ip_whitelist": ["10.0.0.0/8", "192.168.1.100/32"],
+    "hsts_enabled": true,
+    "compliance_signoff": ["ISO-27001-SEC99"]
+  },
+  "auth_topology": {
+    "jwt_config": {
+      "issuer": "https://auth.corporate-gateway.internal",
+      "algorithm": "RS256"
+    }
+  }
+}
