@@ -1,0 +1,18 @@
+{
+  "gateway_id": "GW-EUR-2026",
+  "environment": "production",
+  "network_security": {
+    "ip_whitelist": ["999.999.999.999/99"],
+    "hsts_enabled": false
+  },
+  "auth_topology": {
+    "jwt_config": {
+      "issuer": "https://auth.corporate-gateway.internal",
+      "algorithm": "RS256"
+    },
+    "mtls_config": {
+      "ca_certificate_thumbprint": "a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2",
+      "enforce_revocation_check": true
+    }
+  }
+}
