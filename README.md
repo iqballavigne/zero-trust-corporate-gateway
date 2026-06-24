@@ -159,3 +159,65 @@ The validation matrix below maps our test profiles against the explicit logic en
 | `invalid_gateway_profile.json` | `ip_whitelist[0]` | `"999.999.999.999/99"` | **FAIL** | Values exceed mathematical boundaries of IPv4 octets and CIDR masks |
 | `invalid_gateway_profile.json` | `network_security` | `environment: "production"` with HSTS disabled | **FAIL** | Blocked by conditional invariant matching rule |
 | `invalid_gateway_profile.json` | `auth_topology` | Declares both `jwt_config` and `mtls_config` | **FAIL** | Blocked by logical validation exclusion (`oneOf` mutual exclusivity rule) |
+
+---
+
+## 🕸️ Semantic Ontology Layer (Linked Data Transformation)
+
+While hierarchical structures like JSON are optimal for edge validation gates, modern enterprise architectures leverage semantic graphs to govern unified infrastructure states. Below is the semantic mapping of our valid gateway topology, abstracted into absolute atomic triples using **Turtle (RDF) syntax**:
+
+```turtle
+@prefix rdf:   [http://www.w3.org/1999/02/22-rdf-syntax-ns#](http://www.w3.org/1999/02/22-rdf-syntax-ns#) .
+@prefix rdfs:  [http://www.w3.org/2000/01/rdf-schema#](http://www.w3.org/2000/01/rdf-schema#) .
+@prefix xsd:   [http://www.w3.org/2001/XMLSchema#](http://www.w3.org/2001/XMLSchema#) .
+@prefix sec:   [http://enterprise.security.internal/ontology#](http://enterprise.security.internal/ontology#) .
+@prefix corp:  [http://enterprise.security.internal/infrastructure#](http://enterprise.security.internal/infrastructure#) .
+
+### 1. CONCEPT DEFINITIONS (The Schema / Classes)
+sec:Gateway rdf:type rdfs:Class ;
+    rdfs:subClassOf rdfs:Resource ;
+    rdfs:label "Security Gateway" ;
+    rdfs:comment "An edge gateway enforcing zero-trust access policies." .
+
+sec:SecurityProfile rdf:type rdfs:Class ;
+    rdfs:subClassOf rdfs:Resource ;
+    rdfs:label "Network Security Profile" .
+
+sec:AuthTopology rdf:type rdfs:Class ;
+    rdfs:subClassOf rdfs:Resource ;
+    rdfs:label "Authentication Topology Strategy" .
+
+### 2. RELATIONSHIP DEFINITIONS (The Predicates / Properties)
+sec:hasSecurityProfile rdf:type rdf:Property ;
+    rdfs:domain sec:Gateway ;
+    rdfs:range sec:SecurityProfile .
+
+sec:enforcesAuth rdf:type rdf:Property ;
+    rdfs:domain sec:Gateway ;
+    rdfs:range sec:AuthTopology .
+
+sec:hstsEnabled rdf:type rdf:Property ;
+    rdfs:domain sec:SecurityProfile ;
+    rdfs:range xsd:boolean .
+
+sec:complianceSignoff rdf:type rdf:Property ;
+    rdfs:domain sec:SecurityProfile ;
+    rdfs:range xsd:string .
+
+sec:ipWhitelist rdf:type rdf:Property ;
+    rdfs:domain sec:SecurityProfile ;
+    rdfs:range xsd:string .
+
+### 3. ACTUAL GRAPH DATA (The Instances / Triples)
+corp:GW-USA-2026 rdf:type sec:Gateway ;
+    sec:hasSecurityProfile corp:ProductionSecProfile ;
+    sec:enforcesAuth corp:JWT-EdgeStrategy .
+
+corp:ProductionSecProfile rdf:type sec:SecurityProfile ;
+    sec:hstsEnabled "true"^^xsd:boolean ;
+    sec:complianceSignoff "ISO-27001-SEC99"^^xsd:string ;
+    sec:ipWhitelist "10.0.0.0/8"^^xsd:string , "192.168.1.100/32"^^xsd:string .
+
+corp:JWT-EdgeStrategy rdf:type sec:AuthTopology ;
+    sec:issuer "[https://auth.corporate-gateway.internal](https://auth.corporate-gateway.internal)"^^xsd:anyURI ;
+    sec:algorithm "RS256"^^xsd:string .
