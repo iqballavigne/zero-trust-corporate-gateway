@@ -35,6 +35,10 @@ sec:complianceSignoff rdf:type rdf:Property ;
     rdfs:domain sec:SecurityProfile ;
     rdfs:range xsd:string .
 
+sec:ipWhitelist rdf:type rdf:Property ;
+    rdfs:domain sec:SecurityProfile ;
+    rdfs:range xsd:string .
+
 ### 3. ACTUAL GRAPH DATA (The Instances / Triples)
 corp:GW-USA-2026 rdf:type sec:Gateway ;
     sec:hasSecurityProfile corp:ProductionSecProfile ;
@@ -42,7 +46,8 @@ corp:GW-USA-2026 rdf:type sec:Gateway ;
 
 corp:ProductionSecProfile rdf:type sec:SecurityProfile ;
     sec:hstsEnabled "true"^^xsd:boolean ;
-    sec:complianceSignoff "ISO-27001-SEC99"^^xsd:string .
+    sec:complianceSignoff "ISO-27001-SEC99"^^xsd:string ;
+    sec:ipWhitelist "10.0.0.0/8"^^xsd:string , "192.168.1.100/32"^^xsd:string .
 
 corp:JWT-EdgeStrategy rdf:type sec:AuthTopology ;
     sec:issuer "https://auth.corporate-gateway.internal"^^xsd:anyURI ;
