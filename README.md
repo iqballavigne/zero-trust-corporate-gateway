@@ -166,12 +166,12 @@ The validation matrix below maps our test profiles against the explicit logic en
 
 While hierarchical structures like JSON are optimal for edge validation gates, modern enterprise architectures leverage semantic graphs to govern unified infrastructure states. Below is the semantic mapping of our valid gateway topology, abstracted into absolute atomic triples using **Turtle (RDF) syntax**:
 
-```turtle
-@prefix rdf:   [http://www.w3.org/1999/02/22-rdf-syntax-ns#](http://www.w3.org/1999/02/22-rdf-syntax-ns#) .
-@prefix rdfs:  [http://www.w3.org/2000/01/rdf-schema#](http://www.w3.org/2000/01/rdf-schema#) .
-@prefix xsd:   [http://www.w3.org/2001/XMLSchema#](http://www.w3.org/2001/XMLSchema#) .
-@prefix sec:   [http://enterprise.security.internal/ontology#](http://enterprise.security.internal/ontology#) .
-@prefix corp:  [http://enterprise.security.internal/infrastructure#](http://enterprise.security.internal/infrastructure#) .
+```
+@prefix rdf:   <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs:  <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd:   <http://www.w3.org/2001/XMLSchema#> .
+@prefix sec:   <http://enterprise.security.internal/ontology#> .
+@prefix corp:  <http://enterprise.security.internal/infrastructure#> .
 
 ### 1. CONCEPT DEFINITIONS (The Schema / Classes)
 sec:Gateway rdf:type rdfs:Class ;
@@ -219,5 +219,9 @@ corp:ProductionSecProfile rdf:type sec:SecurityProfile ;
     sec:ipWhitelist "10.0.0.0/8"^^xsd:string , "192.168.1.100/32"^^xsd:string .
 
 corp:JWT-EdgeStrategy rdf:type sec:AuthTopology ;
-    sec:issuer "[https://auth.corporate-gateway.internal](https://auth.corporate-gateway.internal)"^^xsd:anyURI ;
+    sec:issuer "https://auth.corporate-gateway.internal"^^xsd:anyURI ;
     sec:algorithm "RS256"^^xsd:string .
+```
+### 🧠 Strategic Advantage of this Multi-Paradigm Approach
+1. **JSON Schema (Hierarchical Enforcement):** Acts as the fast runtime firewall. It intercepts malformed enterprise parameters (e.g., catching the structural violations modeled in `invalid_gateway_profile.json`) right at the ingestion layer.
+2. **RDF Graph/Turtle (Relational Logic):** Acts as the global corporate data layer. Once a payload passes the JSON validation gate, it can be decomposed safely into atomic statements. This allows global networking engines to query infrastructure dependencies dynamically via SPARQL without worrying about breaking changes to flat tree hierarchies.
