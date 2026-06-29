@@ -19,6 +19,14 @@ sec:AuthTopology rdf:type rdfs:Class ;
     rdfs:label "Authentication Topology Strategy" .
 
 ### 2. RELATIONSHIP DEFINITIONS (The Predicates / Properties)
+sec:gatewayId rdf:type rdf:Property ;
+    rdfs:domain sec:Gateway ;
+    rdfs:range xsd:string .
+
+sec:environment rdf:type rdf:Property ;
+    rdfs:domain sec:Gateway ;
+    rdfs:range xsd:string .
+
 sec:hasSecurityProfile rdf:type rdf:Property ;
     rdfs:domain sec:Gateway ;
     rdfs:range sec:SecurityProfile .
@@ -39,8 +47,18 @@ sec:ipWhitelist rdf:type rdf:Property ;
     rdfs:domain sec:SecurityProfile ;
     rdfs:range xsd:string .
 
+sec:issuer rdf:type rdf:Property ;
+    rdfs:domain sec:AuthTopology ;
+    rdfs:range xsd:anyURI .
+
+sec:algorithm rdf:type rdf:Property ;
+    rdfs:domain sec:AuthTopology ;
+    rdfs:range xsd:string .
+
 ### 3. ACTUAL GRAPH DATA (The Instances / Triples)
 corp:GW-USA-2026 rdf:type sec:Gateway ;
+    sec:gatewayId "GW-USA-2026"^^xsd:string ;
+    sec:environment "production"^^xsd:string ;
     sec:hasSecurityProfile corp:ProductionSecProfile ;
     sec:enforcesAuth corp:JWT-EdgeStrategy .
 
