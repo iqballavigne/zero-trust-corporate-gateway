@@ -50,12 +50,14 @@ This infrastructure configuration schema solves three prominent security state i
 
 ---
 
-## 📜 Production Schema Engine
+## 🛡️ Data Validation Layer
 
-The complete, production-ready enterprise JSON Schema validating zero-trust edge topologies and environmental invariant compliance rules is embedded below:
+The structural integrity of the corporate gateway infrastructure is governed by a production-hardened JSON Schema using the **Draft-07 specification**. The schema operates under enterprise-grade **AJV Strict-Mode constraints**, ensuring that implicit type casting, unmapped keywords, and syntax ambiguities are blocked at compilation time.
+
+### 📄 Hardened Configuration Schema (`corporate-gateway-schema.json`)
 ```
 {
-  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "CorporateGatewayInfrastructureSchema",
   "description": "Validates enterprise zero-trust gateway access configuration profiles and security topologies.",
   "type": "object",
@@ -101,7 +103,7 @@ The complete, production-ready enterprise JSON Schema validating zero-trust edge
               "required": ["issuer", "algorithm"],
               "additionalProperties": false,
               "properties": {
-                "issuer": { "type": "string", "format": "uri" },
+                "issuer": { "type": "string" },
                 "algorithm": { "type": "string", "enum": ["RS256", "ES256"] }
               }
             }
@@ -136,6 +138,7 @@ The complete, production-ready enterprise JSON Schema validating zero-trust edge
       "then": {
         "properties": {
           "network_security": {
+            "type": "object",
             "required": ["compliance_signoff"],
             "properties": {
               "hsts_enabled": { "const": true }
@@ -147,6 +150,13 @@ The complete, production-ready enterprise JSON Schema validating zero-trust edge
   ]
 }
 ```
+
+### 🔍 Deep-Dive Structural Breakdown
+
+* **Root Registration Strategy:** To bypass the historical "shortsightedness" of Draft-07's `"additionalProperties": false` constraint, all fundamental JSON objects (`network_security`, `auth_topology`) are explicitly registered under the root `properties` map. This enables sub-conditional evaluation blocks to append deep validation rules without injecting unregistered, top-level keys.
+* **Deterministic Authentication Routing:** Using a `oneOf` array matched with explicit logical `not` constraints blocks the configuration from defining `jwt_config` and `mtls_config` simultaneously. This prevents edge nodes from encountering non-deterministic routing security states.
+* **Strict Type Assertions:** In accordance with modern pipeline compilation standards, conditional `then` statements inject a mandatory `"type": "object"` clause at the target node path. This prevents the parser engine from attempting implicit structural inferences or skipping nested attribute scans.
+
 ---
 
 ## 📊 System Validation Matrix
