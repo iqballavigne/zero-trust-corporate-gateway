@@ -1,0 +1,49 @@
+name: Zero-Trust Gateway Validation CI
+
+on:
+  push:
+    paths:
+      - 'corporate-gateway-schema.json'
+      - 'tests/valid_gateway_profile.json'
+      - 'tests/invalid_gateway_profile.json'
+  pull_request:
+    paths:
+      - 'corporate-gateway-schema.json'
+      - 'tests/valid_gateway_profile.json'
+      - 'tests/invalid_gateway_profile.json'
+
+jobs:
+  schema-validation:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 📥 Checkout Repository Code
+        uses: actions/checkout@v4
+
+      - name: 🟢 Set up Node.js Runtime
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: 🛠️ Install AJV Validator CLI
+        run: npm install -g ajv-cli
+
+      - name: 🛡️ Assert Valid Payload PASSES
+        run: |
+          echo "Validating 'valid_gateway_profile.json' against the corporate schema..."
+          ajv validate -s corporate-gateway-schema.json -d tests/valid_gateway_profile.json
+
+      - name: 🧪 Assert Invalid Payload FAILS (Negative Testing)
+        run: |
+          echo "Validating 'invalid_gateway_profile.json' to ensure schema constraint enforcement..."
+          
+          # This is an architectural safety pattern called Negative Testing.
+          # We expect 'ajv validate' to FAIL (exit code > 0) on the bad file.
+          # If it passes (exit code 0), our schema isn't strict enough and our CI pipeline must fail.
+          
+          if ajv validate -s corporate-gateway-schema.json -d tests/invalid_gateway_profile.json; then
+            echo "❌ CRITICAL FAILURE: The invalid profile mistakenly PASSED schema validation!"
+            exit 1
+          else
+            echo "✅ SUCCESS: The schema engine successfully blocked the malformed profile as expected."
+          fi
