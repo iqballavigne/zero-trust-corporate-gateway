@@ -39,7 +39,7 @@
       "type": "object",
       "oneOf": [
         {
-          "dependentComment": "Topology 1: JWT Authentication Edge Strategy",
+          "$comment": "Topology 1: JWT Authentication Edge Strategy",
           "required": ["jwt_config"],
           "properties": {
             "jwt_config": {
@@ -55,7 +55,7 @@
           "not": { "required": ["mtls_config"] }
         },
         {
-          "dependentComment": "Topology 2: mTLS Authentication Edge Strategy",
+          "$comment": "Topology 2: mTLS Authentication Edge Strategy",
           "required": ["mtls_config"],
           "properties": {
             "mtls_config": {
@@ -75,7 +75,7 @@
   },
   "allOf": [
     {
-      "dependentComment": "Rule A: If environment is production, HSTS must be true and compliance signoff must be provided.",
+      "$comment": "Rule A: If environment is production, HSTS must be true and compliance signoff must be provided.",
       "if": {
         "properties": {
           "environment": { "const": "production" }
