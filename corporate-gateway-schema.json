@@ -1,5 +1,5 @@
 {
-  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "CorporateGatewayInfrastructureSchema",
   "description": "Validates enterprise zero-trust gateway access configuration profiles and security topologies.",
   "type": "object",
