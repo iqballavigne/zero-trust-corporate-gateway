@@ -47,7 +47,7 @@
               "required": ["issuer", "algorithm"],
               "additionalProperties": false,
               "properties": {
-                "issuer": { "type": "string", "format": "uri" },
+                "issuer": { "type": "string" },
                 "algorithm": { "type": "string", "enum": ["RS256", "ES256"] }
               }
             }
@@ -84,6 +84,7 @@
       "then": {
         "properties": {
           "network_security": {
+            "type" : "object",
             "required": ["compliance_signoff"],
             "properties": {
               "hsts_enabled": { "const": true }
