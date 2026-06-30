@@ -161,17 +161,16 @@ The structural integrity of the corporate gateway infrastructure is governed by 
 
 ## 📊 System Validation Matrix
 
-The validation matrix below maps our test profiles against the explicit logic engines built into the infrastructure schema:
+The validation matrix below maps our test profiles against the explicit logic engines built into the infrastructure schema, demonstrating comprehensive positive and negative test coverage within the automated testing suite:
 
 | Test File | Target Coordinate | Input Payload State | Expected Outcome | Active Constraint Evaluated |
 | :--- | :--- | :--- | :--- | :--- |
-| `valid_gateway_profile.json` | `gateway_id` | `"GW-USA-2026"` | **PASS** | Validated against string regex topology mapping |
-| `valid_gateway_profile.json` | `ip_whitelist` | Subnets inside valid IPv4 ranges | **PASS** | Array evaluations matching CIDR syntax limits |
-| `valid_gateway_profile.json` | `network_security` | `hsts_enabled: true` + active compliance signoff | **PASS** | Satisfies conditional `allOf` block for production environments |
-| `invalid_gateway_profile.json` | `ip_whitelist[0]` | `"999.999.999.999/99"` | **FAIL** | Values exceed mathematical boundaries of IPv4 octets and CIDR masks |
-| `invalid_gateway_profile.json` | `network_security` | `environment: "production"` with HSTS disabled | **FAIL** | Blocked by conditional invariant matching rule |
-| `invalid_gateway_profile.json` | `auth_topology` | Declares both `jwt_config` and `mtls_config` | **FAIL** | Blocked by logical validation exclusion (`oneOf` mutual exclusivity rule) |
-
+| `valid_gateway_profile.json` | `gateway_id` | `"GW-USA-2026"` | **🟢 PASS** | Validated against strict string regex topology mapping (`^GW-[A-Z]{3}-[0-9]{4}$`). |
+| `valid_gateway_profile.json` | `network_security.ip_whitelist` | Subnets inside valid IPv4 ranges | **🟢 PASS** | Array evaluations matching mathematical CIDR syntax limits. |
+| `valid_gateway_profile.json` | `network_security` | `hsts_enabled: true` + active compliance signoff | **🟢 PASS** | Satisfies conditional `allOf -> if/then` block invariants for production environments. |
+| `invalid_gateway_profile.json` | `network_security.ip_whitelist[0]` | `"999.999.999.999/99"` | **🔴 FAIL** | Value exceeds structural boundaries of IPv4 octets and CIDR masks. |
+| `invalid_gateway_profile.json` | `network_security` | `environment: "production"` with missing `compliance_signoff` | **🔴 FAIL** | Blocked by conditional production guardrails (`#/allOf/0/then/properties/network_security/required`). |
+| `invalid_gateway_profile.json` | `auth_topology` | Declares both `jwt_config` and `mtls_config` simultaneously | **🔴 FAIL** | Blocked by logical validation exclusion rules enforcing deterministic routing (`oneOf`). |
 ---
 
 ## 🕸️ Semantic Ontology Layer (Linked Data Transformation)
