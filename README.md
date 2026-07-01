@@ -268,17 +268,66 @@ corp:JWT-EdgeStrategy rdf:type sec:AuthTopology ;
 
 ## ⚙️ CI/CD Automation & Governance
 
-The architecture implements a declarative **GitOps governance pipeline** powered by GitHub Actions. The pipeline serves as a strict quality gate, preventing non-compliant topology shapes or loose configuration states from merging into the primary repository branches.
+Data architecture requires automated governance to ensure structural invariants never suffer from human error or local repository drift. This repository implements a continuous integration (CI) pipeline via GitHub Actions using the modern **Node.js 24 runtime environment** to compile and validate configuration assets automatically upon every code modification.
 
-### 🛠️ Pipeline Implementation Strategy
+### 🧠 Architectural Pipeline Mechanics
 
-* **Node 24 Runtime Environment:** The orchestration runner leverages the Node 24 environment to execute validation tasks, ensuring high-performance asynchronous execution of modern Javascript/JSON toolchains.
-* **Strict AJV Compilation:** Rather than performing basic syntax parsing, the pipeline runs the AJV CLI compiler with strict flags enabled (`--strict=true`). This ensures that structural warnings, unmapped properties, or type ambiguities fail the build immediately.
-* **Differential Path Filtering:** To optimize resource allocation, the workflow engine implements tight path constraints. The validation runner triggers exclusively when changes are detected within JSON files (`**.json`) or the workflow definition itself, preventing unnecessary execution during standalone documentation updates.
-* **Duality Testing Execution (Positive & Negative):**
-  * **Positive Validation:** Confirms that fully compliant production profiles pass through the parser with zero warnings (Exit Code `0`).
-  * **Negative Invariant Validation:** Automatically injects deliberately malformed payloads containing multi-auth conflicts or missing production compliance parameters. The pipeline utilizes conditional shell logic to invert the status check: if an invalid payload successfully passes the schema, the build is manually terminated with an error state (Exit Code `1`).
+The governance framework implements three core engineering design patterns to protect infrastructure state:
 
-### 📄 CI/CD Workflow Engine Blueprint (`validate-pipeline.yml`)
+* **Targeted Path-Filtering Optimization:** The workflow engine relies on declarative path triggers. The CI runner only initializes if changes are detected within the core schema file (`corporate-gateway-schema.json`) or the explicit test payloads. This optimization prevents wasted compute time and eliminates unnecessary runner overhead on unrelated changes (e.g., updates to documentation or semantic graph files).
+* **Deterministic Native Validation:** Using the high-performance **AJV CLI compiler**, the workflow executes a definitive validation check against the reference positive control (`valid_gateway_profile.json`). A non-zero exit code here immediately terminates the pipeline, blocking malformed deployments before they can reach production servers.
+* **Structural Negative Testing Inversion:** True security governance mandates testing what *should not* pass. The pipeline runs a customized bash conditional check against `invalid_gateway_profile.json`. If the bad payload manages to trick the validator and returns an exit code of `0`, the pipeline explicitly overrides the step, throws a critical error, and forces a hard execution exit (`exit 1`) to flag the security loophole.
 
-*(Insert validate-pipeline.yml code block here)*
+### 📄 Governance Pipeline Configuration (`validate.yml`)
+
+```
+name: Zero-Trust Gateway Validation CI
+
+on:
+  push:
+    paths:
+      - 'corporate-gateway-schema.json'
+      - 'tests/valid_gateway_profile.json'
+      - 'tests/invalid_gateway_profile.json'
+  pull_request:
+    paths:
+      - 'corporate-gateway-schema.json'
+      - 'tests/valid_gateway_profile.json'
+      - 'tests/invalid_gateway_profile.json'
+
+jobs:
+  schema-validation:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 📥 Checkout Repository Code
+        uses: actions/checkout@v6
+
+      - name: 🟢 Set up Node.js Runtime
+        uses: actions/setup-node@v6
+        with:
+          node-version: '24'
+
+      - name: 🛠️ Install AJV Validator CLI
+        run: npm install -g ajv-cli
+
+      - name: 🛡️ Assert Valid Payload PASSES
+        run: |
+          echo "Validating 'valid_gateway_profile.json' against the corporate schema..."
+          ajv validate -s corporate-gateway-schema.json -d tests/valid_gateway_profile.json
+
+      - name: 🧪 Assert Invalid Payload FAILS (Negative Testing)
+        run: |
+          echo "Validating 'invalid_gateway_profile.json' to ensure schema constraint enforcement..."
+          
+          # This is an architectural safety pattern called Negative Testing.
+          # We expect 'ajv validate' to FAIL (exit code > 0) on the bad file.
+          # If it passes (exit code 0), our schema isn't strict enough and our CI pipeline must fail.
+          
+          if ajv validate -s corporate-gateway-schema.json -d tests/invalid_gateway_profile.json; then
+            echo "❌ CRITICAL FAILURE: The invalid profile mistakenly PASSED schema validation!"
+            exit 1
+          else
+            echo "✅ SUCCESS: The schema engine successfully blocked the malformed profile as expected."
+          fi
+```
