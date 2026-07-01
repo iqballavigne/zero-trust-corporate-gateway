@@ -173,9 +173,17 @@ The validation matrix below maps our test profiles against the explicit logic en
 | `invalid_gateway_profile.json` | `auth_topology` | Declares both `jwt_config` and `mtls_config` simultaneously | **🔴 FAIL** | Blocked by logical validation exclusion rules enforcing deterministic routing (`oneOf`). |
 ---
 
-## 🕸️ Semantic Ontology Layer (Linked Data Transformation)
+## 🌐 Semantic Graph Architecture
 
-While hierarchical structures like JSON are optimal for edge validation gates, modern enterprise architectures leverage semantic graphs to govern unified infrastructure states. Below is the semantic mapping of our valid gateway topology, abstracted into absolute atomic triples using **Turtle (RDF) syntax**:
+While the JSON Schema layer governs dynamic validation constraints at the execution edge, the enterprise framework maintains a **Semantic Twin** using W3C Resource Description Framework (RDF) standards expressed in the **Turtle (.ttl) dialect**. This transforms structural configuration payloads into an interconnected, queryable knowledge graph for organizational visibility.
+
+### 🧠 Ontological Design (TBox vs. ABox)
+
+The semantic architecture enforces a strict logical separation between definition and assertion:
+* **The TBox (Terminology Box):** Establishes the structural ontology. It defines core classes (`sec:Gateway`, `sec:SecurityProfile`) and foundational properties (`sec:enforcesAuth`, `sec:hasSecurityProfile`), explicitly mapping out the permissible entity relationships and domain/range data boundaries.
+* **The ABox (Assertion Box):** Contains the actual instance data triples. It populates the graph with concrete network assets (`corp:GW-USA-2026`) that mirror the exact valid configuration properties verified by the automated testing pipeline.
+
+### 📄 Semantic Topology Mapping (`gateway-topology.ttl`)
 
 ```
 @prefix rdf:   <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
@@ -199,6 +207,14 @@ sec:AuthTopology rdf:type rdfs:Class ;
     rdfs:label "Authentication Topology Strategy" .
 
 ### 2. RELATIONSHIP DEFINITIONS (The Predicates / Properties)
+sec:gatewayId rdf:type rdf:Property ;
+    rdfs:domain sec:Gateway ;
+    rdfs:range xsd:string .
+
+sec:environment rdf:type rdf:Property ;
+    rdfs:domain sec:Gateway ;
+    rdfs:range xsd:string .
+
 sec:hasSecurityProfile rdf:type rdf:Property ;
     rdfs:domain sec:Gateway ;
     rdfs:range sec:SecurityProfile .
@@ -219,8 +235,18 @@ sec:ipWhitelist rdf:type rdf:Property ;
     rdfs:domain sec:SecurityProfile ;
     rdfs:range xsd:string .
 
+sec:issuer rdf:type rdf:Property ;
+    rdfs:domain sec:AuthTopology ;
+    rdfs:range xsd:anyURI .
+
+sec:algorithm rdf:type rdf:Property ;
+    rdfs:domain sec:AuthTopology ;
+    rdfs:range xsd:string .
+
 ### 3. ACTUAL GRAPH DATA (The Instances / Triples)
 corp:GW-USA-2026 rdf:type sec:Gateway ;
+    sec:gatewayId "GW-USA-2026"^^xsd:string ;
+    sec:environment "production"^^xsd:string ;
     sec:hasSecurityProfile corp:ProductionSecProfile ;
     sec:enforcesAuth corp:JWT-EdgeStrategy .
 
@@ -233,6 +259,9 @@ corp:JWT-EdgeStrategy rdf:type sec:AuthTopology ;
     sec:issuer "https://auth.corporate-gateway.internal"^^xsd:anyURI ;
     sec:algorithm "RS256"^^xsd:string .
 ```
-### 🧠 Strategic Advantage of this Multi-Paradigm Approach
-1. **JSON Schema (Hierarchical Enforcement):** Acts as the fast runtime firewall. It intercepts malformed enterprise parameters (e.g., catching the structural violations modeled in `invalid_gateway_profile.json`) right at the ingestion layer.
-2. **RDF Graph/Turtle (Relational Logic):** Acts as the global corporate data layer. Once a payload passes the JSON validation gate, it can be decomposed safely into atomic statements. This allows global networking engines to query infrastructure dependencies dynamically via SPARQL without worrying about breaking changes to flat tree hierarchies.
+
+### 🎯 Data Graph Alignment Invariants
+
+* **Schema Invariant Symmetry:** Structural pillars required by the JSON validator—such as `gateway_id` and `environment`—are explicitly mapped as distinct datatype predicates (`sec:gatewayId`, `sec:environment`) with defined `xsd:string` ranges. This guarantees the graph is a mathematically true representation of the JSON data state.
+* **Semantic Type Preservation:** While the runtime validation layer utilizes streamlined string checking to maintain AJV compliance, the graph layer retains high-fidelity semantics. For instance, `sec:issuer` explicitly mandates an `xsd:anyURI` type cast, preserving rich metadata validation values for graph queries and SPARQL dependency checking.
+
