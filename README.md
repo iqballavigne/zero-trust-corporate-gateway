@@ -264,4 +264,21 @@ corp:JWT-EdgeStrategy rdf:type sec:AuthTopology ;
 
 * **Schema Invariant Symmetry:** Structural pillars required by the JSON validator—such as `gateway_id` and `environment`—are explicitly mapped as distinct datatype predicates (`sec:gatewayId`, `sec:environment`) with defined `xsd:string` ranges. This guarantees the graph is a mathematically true representation of the JSON data state.
 * **Semantic Type Preservation:** While the runtime validation layer utilizes streamlined string checking to maintain AJV compliance, the graph layer retains high-fidelity semantics. For instance, `sec:issuer` explicitly mandates an `xsd:anyURI` type cast, preserving rich metadata validation values for graph queries and SPARQL dependency checking.
+---
 
+## ⚙️ CI/CD Automation & Governance
+
+The architecture implements a declarative **GitOps governance pipeline** powered by GitHub Actions. The pipeline serves as a strict quality gate, preventing non-compliant topology shapes or loose configuration states from merging into the primary repository branches.
+
+### 🛠️ Pipeline Implementation Strategy
+
+* **Node 24 Runtime Environment:** The orchestration runner leverages the Node 24 environment to execute validation tasks, ensuring high-performance asynchronous execution of modern Javascript/JSON toolchains.
+* **Strict AJV Compilation:** Rather than performing basic syntax parsing, the pipeline runs the AJV CLI compiler with strict flags enabled (`--strict=true`). This ensures that structural warnings, unmapped properties, or type ambiguities fail the build immediately.
+* **Differential Path Filtering:** To optimize resource allocation, the workflow engine implements tight path constraints. The validation runner triggers exclusively when changes are detected within JSON files (`**.json`) or the workflow definition itself, preventing unnecessary execution during standalone documentation updates.
+* **Duality Testing Execution (Positive & Negative):**
+  * **Positive Validation:** Confirms that fully compliant production profiles pass through the parser with zero warnings (Exit Code `0`).
+  * **Negative Invariant Validation:** Automatically injects deliberately malformed payloads containing multi-auth conflicts or missing production compliance parameters. The pipeline utilizes conditional shell logic to invert the status check: if an invalid payload successfully passes the schema, the build is manually terminated with an error state (Exit Code `1`).
+
+### 📄 CI/CD Workflow Engine Blueprint (`validate-pipeline.yml`)
+
+*(Insert validate-pipeline.yml code block here)*
